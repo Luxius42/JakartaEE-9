@@ -10,15 +10,13 @@ public class EjemploJDBC {
         String user = "root";
         String password = "admin";
 
-        Connection con = null; //Se declara fuera para tener una variable global y así poder usarlo luego en el finally
-        Statement st = null;
-        ResultSet rs = null;
-        try {
-
-            con = DriverManager.getConnection(url, user, password);
-            st = con.createStatement();
-            rs = st.executeQuery("select * from productos2");
-
+        try ( //De esta forma, el manejo de errores se cerrará conforme falle la conexión y no es necesario hacer un finally
+              //Hacerlo de esta manera, permite un código mucho más legible y limpio
+                Connection con = DriverManager.getConnection(url, user, password);
+                Statement  st = con.createStatement();
+                ResultSet rs = st.executeQuery("select * from productos2");
+             )
+        {
             try {
                 while (rs.next()) {
                     System.out.println( "Id: " + rs.getInt(1));
@@ -33,22 +31,6 @@ public class EjemploJDBC {
         } catch (SQLException e) {
             System.out.println("Error a la hora de conectar a la base de datos: " + e.getMessage().toUpperCase());
            //throw new RuntimeException("Error conectando a la base de datos: ", e);
-        }finally {
-
-            try {
-                System.out.println("Cerrando conexion...");
-                rs.close();
-                st.close();
-                con.close();
-            } catch (SQLException e) {
-                System.out.println("Error al cerrar el conexion: " + e.getMessage().toUpperCase());
-                //throw new RuntimeException(e);
-            }
-
-
         }
-
-
     }
-
 }
