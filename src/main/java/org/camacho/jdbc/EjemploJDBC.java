@@ -22,8 +22,47 @@ public class EjemploJDBC {
             *   }
             * rep.listar().forEach( p -> System.out.println(p.getNombre()));
             * */
+            System.out.println("=========== LISTAR ============");
+            System.out.println();
+
             rep.listar().forEach(System.out::println);
+
+            System.out.println();
+            System.out.println("=========== VER POR ID ============");
+            System.out.println();
+
             System.out.println(rep.porId(3L));
+
+            System.out.println();
+            System.out.println("=========== INSERTAR ============");
+            System.out.println();
+
+                Producto p = new Producto();
+                p.setNombre("Gafas RayBan");
+                p.setPrecio(20);
+                p.setFechaRegistro(new java.util.Date());
+                rep.guardar(p);
+
+            rep.listar().forEach(System.out::println);
+
+            System.out.println();
+            System.out.println("=========== MODIFICAR ============");
+            System.out.println();
+
+            Producto m = new Producto();
+            m.setNombre("Pantalla LED");
+            m.setPrecio(50);
+            m.setId(10L);
+            rep.guardar(m);
+
+            rep.listar().forEach(System.out::println);
+
+            System.out.println();
+            System.out.println("=========== ELIMINAR ============");
+            System.out.println();
+
+            rep.eliminar(6L);
+            rep.listar().forEach(System.out::println);
 
 
         } catch (SQLException e) {

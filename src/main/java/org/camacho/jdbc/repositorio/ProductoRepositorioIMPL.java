@@ -51,29 +51,64 @@ public class ProductoRepositorioIMPL implements Repositorio<Producto> {
             PreparedStatement ps = getConnection().prepareStatement("SELECT * FROM PRODUCTOS WHERE id = ?")
         ){
             ps.setLong(1, id);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                p = buscaProducto(rs);
+            //ACTUALIZACIÓN: De esta forma, tienes un AutoClose automático
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    p = buscaProducto(rs);
+                }
             }
-            /* En este caso tenemos que hacer un cierre manual porque no podemos
-            * meterlo en el cierre automático. En el cierre automático sólo debe
-            * estar las declaraciones de RECURSOS, nunca instrucciones
-            */
-            rs.close();
         } catch (SQLException e) {
-            System.out.println("Error al conectar al buscar el producto: "  + e.getMessage().toUpperCase());
+            System.out.println("Error al buscar el producto: "  + e.getMessage().toUpperCase());
         }
         return p;
     }
 
     @Override
     public void guardar(Producto producto) {
+        String sql;
+        if (producto.getId() != null && producto.getId() > 0) {
+            sql = "UPDATE PRODUCTOS SET nombre = ?, precio = ? WHERE ID = ?";
+        } else {
+            sql = "INSERT INTO PRODUCTOS(nombre, precio, fecha_registro) VALUES (?, ?, ?)";
+        }
+        try (
+                PreparedStatement ps = getConnection().prepareStatement(sql);
+            )
+        {
+            ps.setString(1, producto.getNombre());
+            ps.setLong(2, producto.getPrecio());
 
+            if (producto.getId() != null && producto.getId() > 0) {
+                ps.setLong(3, producto.getId());
+            } else {
+                ps.setDate(3, new Date(producto.getFechaRegistro().getTime()));
+            }
+
+            ps.executeUpdate();
+
+        } catch (SQLException e) {
+            System.out.println("Error al conectar al insertar productos: "  + e.getMessage().toUpperCase());
+        }
     }
 
     @Override
     public void eliminar(Long id) {
+        String sql;
+        if (id != null) {
+            sql = "DELETE FROM PRODUCTOS WHERE ID = ?";
+        }  else {
+            throw new RuntimeException("No se puede eliminar el producto ya que no has seleccionado correctamente el Id o no existe");
+        }
 
+        try (
+                PreparedStatement ps = getConnection().prepareStatement(sql);
+            ) {
+            ps.setLong(1, id);
+
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("Error al eliminar producto: "  + e.getMessage().toUpperCase());
+        }
     }
     /* MÉTODOS PRIVADOS */
 
@@ -95,7 +130,6 @@ public class ProductoRepositorioIMPL implements Repositorio<Producto> {
         p.setFechaRegistro(rs.getDate("fecha_registro")); //Esto permite pasar a .util el DATE, pero nunca de .sql a .util
         productos.add(p);
     }
-
 
     /**
      * Método que se utiliza para buscar el producto seleccionado
