@@ -1,20 +1,16 @@
 package org.camacho.jdbc;
 
+import org.camacho.jdbc.util.ConectBBDD;
+
 import java.sql.*;
 
 public class EjemploJDBC {
     public static void main(String[] args) {
 
-        /*Datos de conexión*/
-        String url = "jdbc:mysql://localhost:3308/java_curso?serverTimezone=UTC";
-        String user = "root";
-        String password = "admin";
-
-        try ( //De esta forma, el manejo de errores se cerrará conforme falle la conexión y no es necesario hacer un finally
-              //Hacerlo de esta manera, permite un código mucho más legible y limpio
-                Connection con = DriverManager.getConnection(url, user, password);
+        try (
+                Connection con = ConectBBDD.getInstance(); //Se ha creado una clase única que contiene la conexión a la BBDD
                 Statement  st = con.createStatement();
-                ResultSet rs = st.executeQuery("select * from productos2");
+                ResultSet rs = st.executeQuery("select * from productos");
              )
         {
             try {
