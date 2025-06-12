@@ -1,5 +1,6 @@
 package org.camacho.jdbc;
 
+import org.camacho.jdbc.modelo.Categoria;
 import org.camacho.jdbc.modelo.Producto;
 import org.camacho.jdbc.repositorio.ProductoRepositorioIMPL;
 import org.camacho.jdbc.repositorio.Repositorio;
@@ -31,28 +32,40 @@ public class EjemploJDBC {
             System.out.println("=========== VER POR ID ============");
             System.out.println();
 
-            System.out.println(rep.porId(3L));
+            System.out.println(rep.porId(5L));
 
             System.out.println();
             System.out.println("=========== INSERTAR ============");
             System.out.println();
 
+/*
                 Producto p = new Producto();
-                p.setNombre("Gafas RayBan");
-                p.setPrecio(20);
+                p.setNombre("NVIDIA RTX5600 DDR 5 32GB");
+                p.setPrecio(650);
                 p.setFechaRegistro(new java.util.Date());
+
+                Categoria c = new Categoria();
+                c.setIdCategoria(4L);
+                p.setCategoria(c);
+
                 rep.guardar(p);
 
-            rep.listar().forEach(System.out::println);
 
+            rep.listar().forEach(System.out::println);
+*/
             System.out.println();
             System.out.println("=========== MODIFICAR ============");
             System.out.println();
 
             Producto m = new Producto();
-            m.setNombre("Pantalla LED");
-            m.setPrecio(50);
-            m.setId(10L);
+            m.setNombre("Pantalla LED 16\"");
+            m.setPrecio(150);
+            m.setId(16L);
+
+            Categoria c = new Categoria();
+            c.setIdCategoria(2L);
+            m.setCategoria(c);
+
             rep.guardar(m);
 
             rep.listar().forEach(System.out::println);
@@ -61,7 +74,7 @@ public class EjemploJDBC {
             System.out.println("=========== ELIMINAR ============");
             System.out.println();
 
-            rep.eliminar(6L);
+            rep.eliminar(18L);
             rep.listar().forEach(System.out::println);
 
 
