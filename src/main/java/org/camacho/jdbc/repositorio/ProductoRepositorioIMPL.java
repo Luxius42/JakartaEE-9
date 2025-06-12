@@ -17,7 +17,7 @@ import java.util.List;
 public class ProductoRepositorioIMPL implements Repositorio<Producto> {
     /*Recoge la conexión*/
     private Connection getConnection() throws SQLException {
-        return ConectBBDD.getInstance();
+        return ConectBBDD.getConnection();
     }
 
     @Override //--> Gracias a esto, se puede entender que viene de una interfaz o clase padre

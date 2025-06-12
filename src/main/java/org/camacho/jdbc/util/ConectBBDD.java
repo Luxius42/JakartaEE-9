@@ -1,5 +1,7 @@
 package org.camacho.jdbc.util;
 
+import org.apache.commons.dbcp2.BasicDataSource;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -13,21 +15,25 @@ public class ConectBBDD {
     private static String url = "jdbc:mysql://localhost:3308/java_curso?serverTimezone=UTC";
     private static String password = "admin";
     private static String user = "root";
-    private static Connection connection;
+    //private static Connection connection;
+    private static BasicDataSource pool;
 
-    public static Connection getInstance() throws SQLException {
-        /* Esto está bien para una única conexión, pero si quisiéramos abrir y cerrar la conexión para cada
-        * Consulta, debemos hacer lo siguiente:
-        *
-            if (connection == null) {
-                try {
-                    connection = DriverManager.getConnection(url, user, password);
-                } catch (SQLException e) {
-                    System.out.println("Error al conectar a BBDD: "  + e.getMessage().toUpperCase());
-                }
-            }
-        */
-        /* Esto permite realizar una conexión y cerrarla en el momento que necesitemos */
-        return DriverManager.getConnection(url, user, password);
+    public static BasicDataSource getInstance() throws SQLException {
+        if (pool == null) {
+            pool = new BasicDataSource();
+            pool.setUrl(url);
+            pool.setUsername(user);
+            pool.setPassword(password);
+
+            pool.setInitialSize(3);
+            pool.setMinIdle(5);
+            pool.setMaxIdle(8);
+            pool.setMaxTotal(10); //Esto indica el máximo de conexiones tanto activas como inactivas que puede existir
+        }
+        return pool;
+    }
+
+    public static Connection getConnection() throws SQLException {
+        return getInstance().getConnection();
     }
 }
