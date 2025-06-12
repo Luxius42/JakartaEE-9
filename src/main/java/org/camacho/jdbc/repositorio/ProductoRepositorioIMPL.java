@@ -1,5 +1,6 @@
 package org.camacho.jdbc.repositorio;
 
+import org.camacho.jdbc.modelo.Categoria;
 import org.camacho.jdbc.modelo.Producto;
 import org.camacho.jdbc.util.ConectBBDD;
 
@@ -31,9 +32,17 @@ public class ProductoRepositorioIMPL implements Repositorio<Producto> {
         * una vez finalice la ejecución. Estas instrucciones permiten un código seguro que evita
         * fugas de recursos. FUNCIONA A PARTIR DE JAVA 7, EN VERSIONES ANTERIORES HAY QUE REALIZAR FINALLY      *
         */
+        String sql =
+                "SELECT P.*, C.Descrip as Tipo " +
+                "FROM PRODUCTOS P " +
+                "INNER JOIN CATEGORIAS C ON P.idCategoria = C.idCategorias " +
+                "ORDER BY P.id";
+
+        //De esta forma, se abre y se cierra la conexión en tiempo de ejecución
         try(
-            Statement st = getConnection().createStatement();
-            ResultSet rs = st.executeQuery("SELECT * FROM PRODUCTOS");
+            Connection conn = getConnection();
+            Statement st = conn.createStatement();
+            ResultSet rs = st.executeQuery(sql);
         ) {
             while (rs.next()) {
                 getProductos(rs, productos);
@@ -47,11 +56,17 @@ public class ProductoRepositorioIMPL implements Repositorio<Producto> {
     @Override
     public Producto porId(Long id) {
         Producto p = null;
+        String sql =
+                "SELECT P.*, C.Descrip as Tipo " +
+                "FROM PRODUCTOS P " +
+                "INNER JOIN CATEGORIAS C ON P.idCategoria = C.idCategorias " +
+                "WHERE P.id = ? ";
         try (
-            PreparedStatement ps = getConnection().prepareStatement("SELECT * FROM PRODUCTOS WHERE id = ?")
+            Connection conn = getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql)
         ){
             ps.setLong(1, id);
-            //ACTUALIZACIÓN: De esta forma, tienes un AutoClose automático
+
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     p = buscaProducto(rs);
@@ -67,22 +82,25 @@ public class ProductoRepositorioIMPL implements Repositorio<Producto> {
     public void guardar(Producto producto) {
         String sql;
         if (producto.getId() != null && producto.getId() > 0) {
-            sql = "UPDATE PRODUCTOS SET nombre = ?, precio = ? WHERE ID = ?";
+            sql = "UPDATE PRODUCTOS SET nombre = ?, precio = ?, idCategoria = ? WHERE ID = ?";
         } else {
-            sql = "INSERT INTO PRODUCTOS(nombre, precio, fecha_registro) VALUES (?, ?, ?)";
+            sql = "INSERT INTO PRODUCTOS(nombre, precio, idCategoria, fecha_registro) VALUES (?, ?, ?, ?)";
         }
         try (
-                PreparedStatement ps = getConnection().prepareStatement(sql);
+                Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);
             )
         {
             ps.setString(1, producto.getNombre());
             ps.setLong(2, producto.getPrecio());
+            ps.setLong(3, producto.getCategoria().getIdCategoria());
 
             if (producto.getId() != null && producto.getId() > 0) {
-                ps.setLong(3, producto.getId());
+                ps.setLong(4, producto.getId());
             } else {
-                ps.setDate(3, new Date(producto.getFechaRegistro().getTime()));
+                ps.setDate(4, new Date(producto.getFechaRegistro().getTime()));
             }
+
 
             ps.executeUpdate();
 
@@ -101,7 +119,8 @@ public class ProductoRepositorioIMPL implements Repositorio<Producto> {
         }
 
         try (
-                PreparedStatement ps = getConnection().prepareStatement(sql);
+                Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);
             ) {
             ps.setLong(1, id);
 
@@ -128,6 +147,13 @@ public class ProductoRepositorioIMPL implements Repositorio<Producto> {
         p.setNombre(rs.getString(2));
         p.setPrecio(rs.getInt("precio"));
         p.setFechaRegistro(rs.getDate("fecha_registro")); //Esto permite pasar a .util el DATE, pero nunca de .sql a .util
+        Categoria c = new Categoria();
+
+        c.setIdCategoria(rs.getLong(5));
+        c.setDescripcion(rs.getString(6));
+
+        p.setCategoria(c);
+
         productos.add(p);
     }
 
@@ -143,6 +169,14 @@ public class ProductoRepositorioIMPL implements Repositorio<Producto> {
         p.setNombre(rs.getString(2));
         p.setPrecio(rs.getInt(3));
         p.setFechaRegistro(rs.getDate(4));
+
+        Categoria c = new Categoria();
+
+        c.setIdCategoria(rs.getLong(5));
+        c.setDescripcion(rs.getString(6));
+
+        p.setCategoria(c);
+
 
         return p;
     }
