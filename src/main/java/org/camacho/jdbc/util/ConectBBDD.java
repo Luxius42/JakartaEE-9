@@ -18,7 +18,7 @@ public class ConectBBDD {
     public static Connection getInstance() throws SQLException {
         /* Esto está bien para una única conexión, pero si quisiéramos abrir y cerrar la conexión para cada
         * Consulta, debemos hacer lo siguiente:
-        *
+        */
             if (connection == null) {
                 try {
                     connection = DriverManager.getConnection(url, user, password);
@@ -26,8 +26,8 @@ public class ConectBBDD {
                     System.out.println("Error al conectar a BBDD: "  + e.getMessage().toUpperCase());
                 }
             }
-        */
+
         /* Esto permite realizar una conexión y cerrarla en el momento que necesitemos */
-        return DriverManager.getConnection(url, user, password);
+        return connection;
     }
 }
