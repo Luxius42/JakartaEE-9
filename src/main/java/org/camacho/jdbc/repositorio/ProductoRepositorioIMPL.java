@@ -40,6 +40,8 @@ public class ProductoRepositorioIMPL implements Repositorio<Producto> {
                 mapa.put(i, meta.getColumnLabel(i));
             }
             return mapa;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -72,6 +74,7 @@ public class ProductoRepositorioIMPL implements Repositorio<Producto> {
             }
         } catch (SQLException e) {
             System.out.println("Error al conectar al listar productos: "  + e.getMessage().toUpperCase());
+            throw new RuntimeException(e);
         }
         return productos;
     }
@@ -97,6 +100,7 @@ public class ProductoRepositorioIMPL implements Repositorio<Producto> {
             }
         } catch (SQLException e) {
             System.out.println("Error al buscar el producto: "  + e.getMessage().toUpperCase());
+            throw new RuntimeException(e);
         }
         return p;
     }
@@ -107,7 +111,7 @@ public class ProductoRepositorioIMPL implements Repositorio<Producto> {
         if (producto.getId() != null && producto.getId() > 0) {
             sql = "UPDATE PRODUCTOS SET nombre = ?, precio = ?, idCategoria = ?, sku = ? WHERE ID = ?";
         } else {
-            sql = "INSERT INTO PRODUCTOS(nombre, precio, idCategoria, fecha_registro, sku = ?) VALUES (?, ?, ?, ?)";
+            sql = "INSERT INTO PRODUCTOS(nombre, precio, idCategoria, sku, fecha_registro) VALUES (?, ?, ?, ?, ?)";
         }
         try (
                 Connection conn = getConnection();
@@ -128,7 +132,8 @@ public class ProductoRepositorioIMPL implements Repositorio<Producto> {
             ps.executeUpdate();
 
         } catch (SQLException e) {
-            System.out.println("Error al conectar al insertar productos: "  + e.getMessage().toUpperCase());
+            System.out.println("Error al insertar productos: "  + e.getMessage().toUpperCase());
+            throw new RuntimeException(e); //Para que el rollback del main funcione, debemos lanzar la Excepción y que salte el CATCH
         }
     }
 
@@ -150,6 +155,7 @@ public class ProductoRepositorioIMPL implements Repositorio<Producto> {
             ps.executeUpdate();
         } catch (SQLException e) {
             System.out.println("Error al eliminar producto: "  + e.getMessage().toUpperCase());
+            throw new RuntimeException(e);
         }
     }
     /* MÉTODOS PRIVADOS */
