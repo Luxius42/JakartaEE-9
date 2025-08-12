@@ -10,14 +10,17 @@ public class Producto {
     private Date fechaRegistro; //IMPORTANTE, cuando trabajemos con JAVA, traer siempre .util.
     //Si trabajamos ya directamente con BBDD, traer .sql
     private Categoria categoria;
+    private String sku;
+
 
     @Override
     public String toString() {
-        return "Id: " + id +
+        return " Id: " + id +
                 "| Descrip: " + nombre +
                 " | Precio: " + precio + "€" +
                 " | Fecha de registro: " + fechaRegistro +
-                " | Categoria: " + categoria.getDescripcion();
+                " | Categoria: " + categoria.getDescripcion() +
+                " | SKU: " + sku;
     }
 
     public Producto() {
@@ -69,4 +72,13 @@ public class Producto {
     public void setCategoria(Categoria categoria) {
         this.categoria = categoria;
     }
+
+    public String getSku() {
+        return sku;
+    }
+
+    public void setSku(String sku) {
+        this.sku = sku;
+    }
+
 }

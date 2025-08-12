@@ -6,7 +6,9 @@ import org.camacho.jdbc.util.ConectBBDD;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Esta es una clase tipo DAO. A través de una interfaz, recoge los métodos que va
@@ -18,6 +20,27 @@ public class ProductoRepositorioIMPL implements Repositorio<Producto> {
     /*Recoge la conexión*/
     private Connection getConnection() throws SQLException {
         return ConectBBDD.getInstance();
+    }
+
+    public  Map<Integer, String> mapaColumnas() throws SQLException {
+        String sql = """
+            SELECT P.*, C.Descrip AS Tipo
+            FROM PRODUCTOS P
+            INNER JOIN CATEGORIAS C ON P.idCategoria = C.idCategorias
+            ORDER BY P.id
+        """;
+        try (
+             Connection conn = getConnection();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql);) {
+
+            ResultSetMetaData meta = rs.getMetaData();
+            Map<Integer, String> mapa = new LinkedHashMap<>();
+            for (int i = 1; i <= meta.getColumnCount(); i++) {
+                mapa.put(i, meta.getColumnLabel(i));
+            }
+            return mapa;
+        }
     }
 
     @Override //--> Gracias a esto, se puede entender que viene de una interfaz o clase padre
@@ -82,9 +105,9 @@ public class ProductoRepositorioIMPL implements Repositorio<Producto> {
     public void guardar(Producto producto) {
         String sql;
         if (producto.getId() != null && producto.getId() > 0) {
-            sql = "UPDATE PRODUCTOS SET nombre = ?, precio = ?, idCategoria = ? WHERE ID = ?";
+            sql = "UPDATE PRODUCTOS SET nombre = ?, precio = ?, idCategoria = ?, sku = ? WHERE ID = ?";
         } else {
-            sql = "INSERT INTO PRODUCTOS(nombre, precio, idCategoria, fecha_registro) VALUES (?, ?, ?, ?)";
+            sql = "INSERT INTO PRODUCTOS(nombre, precio, idCategoria, fecha_registro, sku = ?) VALUES (?, ?, ?, ?)";
         }
         try (
                 Connection conn = getConnection();
@@ -94,13 +117,13 @@ public class ProductoRepositorioIMPL implements Repositorio<Producto> {
             ps.setString(1, producto.getNombre());
             ps.setLong(2, producto.getPrecio());
             ps.setLong(3, producto.getCategoria().getIdCategoria());
+            ps.setString(4, producto.getSku());
 
             if (producto.getId() != null && producto.getId() > 0) {
-                ps.setLong(4, producto.getId());
+                ps.setLong(5, producto.getId());
             } else {
-                ps.setDate(4, new Date(producto.getFechaRegistro().getTime()));
+                ps.setDate(5, new Date(producto.getFechaRegistro().getTime()));
             }
-
 
             ps.executeUpdate();
 
@@ -147,10 +170,11 @@ public class ProductoRepositorioIMPL implements Repositorio<Producto> {
         p.setNombre(rs.getString(2));
         p.setPrecio(rs.getInt("precio"));
         p.setFechaRegistro(rs.getDate("fecha_registro")); //Esto permite pasar a .util el DATE, pero nunca de .sql a .util
+        p.setSku(rs.getString(6));
         Categoria c = new Categoria();
 
         c.setIdCategoria(rs.getLong(5));
-        c.setDescripcion(rs.getString(6));
+        c.setDescripcion(rs.getString(7));
 
         p.setCategoria(c);
 
@@ -176,7 +200,6 @@ public class ProductoRepositorioIMPL implements Repositorio<Producto> {
         c.setDescripcion(rs.getString(6));
 
         p.setCategoria(c);
-
 
         return p;
     }
